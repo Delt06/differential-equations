@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DEAssignment.Charts.Factories;
 using DEAssignment.Methods.Factories;
-using DEAssignment.SolutionCharts.Factories;
 
 namespace DEAssignment
 {

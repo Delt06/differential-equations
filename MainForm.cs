@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using DEAssignment.Charts;
+using DEAssignment.Charts.Error;
+using DEAssignment.Charts.Factories;
+using DEAssignment.Charts.Solution;
 using DEAssignment.Methods;
 using DEAssignment.Methods.Factories;
-using DEAssignment.SolutionCharts;
-using DEAssignment.SolutionCharts.Factories;
 using JetBrains.Annotations;
 
 namespace DEAssignment
@@ -32,105 +34,158 @@ namespace DEAssignment
         {
             AutoSize = true;
 
-            var methods = _methodFactory.CreateAll();
-            
-            var charts = methods
-                .Select(_chartFactory.CreateChartFor)
-                .ToArray();
+            var methods = _methodFactory.CreateAll().ToArray();
+            var chartCollection = FunctionChartCollection.CreateViaFactory(methods, _chartFactory);
 
-            ConfigureCharts(charts);
-            
-            foreach (var chart in charts)
-            {
-                Controls.Add(chart.Control);
-            }
+            ConfigureChartCollection(chartCollection, 0);
+            Controls.AddRange(chartCollection.Select(c => c.Control).ToArray());
 
-            foreach (var control in CreateControls(charts, charts.Max(c => c.Control.Left + c.Control.Width)))
-            {
-                Controls.Add(control);
-            }
+            var controlLeft = chartCollection.Max(c => c.Control.Right);
+            var parameterControls = CreateControls(chartCollection, controlLeft);
+            Controls.AddRange(parameterControls.ToArray());
         }
 
-        private static void ConfigureCharts([NotNull] IReadOnlyList<ISolvingMethodChart> charts)
+        private static void ConfigureChartCollection([NotNull] FunctionChartCollection chartCollection, int left)
+        {
+            ConfigureCharts(chartCollection.SolutionCharts, left, 0);
+            var localErrorsChartTop = chartCollection.SolutionCharts.Max(c => c.Control.Bottom);
+            ConfigureCharts(chartCollection.LocalErrorsCharts, left, localErrorsChartTop);
+            var globalErrorsChartTop = chartCollection.LocalErrorsCharts.Max(c => c.Control.Bottom);
+            ConfigureCharts(chartCollection.GlobalErrorsCharts, left,globalErrorsChartTop);
+        }
+
+        private static void ConfigureCharts([NotNull] IReadOnlyList<IFunctionChart> charts, int left, int top)
         {
             for (var i = 0; i < charts.Count; i++)
             {
                 var chartControl = charts[i].Control;
 
-                chartControl.Top = chartControl.Height * (i / Rows);
-                chartControl.Left = chartControl.Width * (i % Columns);
+                chartControl.Top = top;
+                chartControl.Left = left + chartControl.Width * i;
             }
         }
 
         [NotNull]
-        private static IEnumerable<Control> CreateControls(ISolvingMethodChart[] charts, int left)
+        private static IEnumerable<Control> CreateControls([NotNull] FunctionChartCollection chartCollection, int left)
         {
-            var (stepLabel, stepForm) = new ParameterBox(left, 0, "step",
-                Utils.Step, RangeConstraint.ZeroOne);
-            yield return stepLabel;
-            yield return stepForm;
-            
-            var (x0Label, x0Form) = new ParameterBox(left, stepForm.Bottom, "x_0", 
-                Utils.Ivp.X0, RangeConstraint.None);
+            var (x0Label, x0Form) = new ParameterBox(left, 0, "x_0", 
+                Utils.Ivp.X0, Constraint.None);
             yield return x0Label;
             yield return x0Form;
             
             var (y0Label, y0Form) = new ParameterBox(left, x0Form.Bottom, "y_0",
-                Utils.Ivp.Y0, RangeConstraint.None);
+                Utils.Ivp.Y0, Constraint.None);
             yield return y0Label;
             yield return y0Form;
-            
-            var xMaxConstraint = new RangeConstraint(
-                () => x0Form.TryGetValue(out var y0) ? y0 : double.NegativeInfinity, 
-                () => double.PositiveInfinity);
+
+            var xMaxConstraint = new Constraint(xMax => x0Form.TryGetValue(out var x0) && xMax > x0);
             var (xMaxLabel, xMaxForm) = new ParameterBox(left, y0Form.Bottom, "x_max", 
                 Utils.XMax, xMaxConstraint);
             yield return xMaxLabel;
             yield return xMaxForm;
 
-            var button = CreateApplyButton(xMaxLabel.Left, xMaxLabel.Bottom, 
-                xMaxLabel.Width + xMaxForm.Width);
-            yield return button;
+            var nRangeConstraint = new Constraint(n => n >= 2);
+            var (nLabel, nForm) = new ParameterBox(left, xMaxForm.Bottom, "n",
+                Utils.N, nRangeConstraint);
+            yield return nLabel;
+            yield return nForm;
 
-            var table = CreateTableForErrors(x0Form.Right);
-            yield return table;
+            var applyIvpButton = CreateApplyButton(nLabel.Left, nLabel.Bottom, 
+                nLabel.Width + nForm.Width);
+            yield return applyIvpButton;
 
-            button.Click += (sender, args) =>
+            applyIvpButton.Click += (sender, args) =>
             {
-                if (!AreValid(stepForm, x0Form, y0Form, xMaxForm,
-                    out var step, out var ivp, out var xMax))
+                if (!IvpFormsAreValid(nForm, x0Form, y0Form, xMaxForm,
+                    out var n, out var ivp, out var xMax))
                 {
                     return;
                 }
 
-                foreach (var chart in charts)
+                var step = Utils.GetStep(ivp.X0, xMax, n);
+
+                foreach (var chart in chartCollection.SolutionCharts)
                 {
-                    chart.SetUp(step, ivp, xMax);
+                    chart.SetUp(n, ivp, xMax);
                 }
-                
-                var approximatedMethods = charts
-                    .Select(c => c.Method)
-                    .Where(m => m is ApproximatedMethod)
-                    .ToArray();
-                table.SetUpForErrors(approximatedMethods, step, ivp, xMax);
+
+                foreach (var chart in chartCollection.LocalErrorsCharts)
+                {
+                    chart.Update(step, ivp, xMax);
+                }
             };
             
-            button.PerformClick();
+            applyIvpButton.PerformClick();
+            
+            var (nMinLabel, nMinForm) = new ParameterBox(nForm.Right, 0, "n_min",
+                Utils.N, nRangeConstraint);
+            yield return nMinLabel;
+            yield return nMinForm;
+            
+            var nMinConstraint = new Constraint(nMax => nMax >= 2 && 
+                                                        nMinForm.TryGetValue(out var nMin) && nMax >= nMin + 1);
+            var (nMaxLabel, nMaxForm) = new ParameterBox(nForm.Right, nMinLabel.Bottom, "n_max", 
+                Utils.NMax, nMinConstraint);
+            yield return nMaxLabel;
+            yield return nMaxForm;
+
+            var applyGlobalErrorButton = CreateApplyButton(nMaxLabel.Left, nMaxForm.Bottom, 
+                nMaxLabel.Width + nMaxForm.Width);
+            yield return applyGlobalErrorButton;
+
+            applyGlobalErrorButton.Click += (sender, args) =>
+            {
+                if (!NRangeFormsAreValid(x0Form, y0Form, xMaxForm, nMinForm, nMaxForm, out var ivp, out var xMax,
+                    out var nMin, out var nMax))
+                {
+                    return;
+                }
+
+                foreach (var chart in chartCollection.GlobalErrorsCharts)
+                {
+                    chart.Update(nMin, nMax, ivp, xMax);
+                }
+            };
+            
+            applyGlobalErrorButton.PerformClick();
         }
 
-        private static bool AreValid(TextBoxWithConstraints stepForm, 
+        private static bool IvpFormsAreValid(TextBoxWithConstraints nForm, 
             TextBoxWithConstraints x0Form,
             TextBoxWithConstraints y0Form,
             TextBoxWithConstraints xMaxForm,
-            out double step,
+            out int n,
             out Ivp ivp,
             out double xMax)
         {
-            var valid = stepForm.TryGetValue(out step) & 
+            var valid = nForm.TryGetValue(out var nNotRounded) & 
                         x0Form.TryGetValue(out var x0) &
                         y0Form.TryGetValue(out var y0) &
                         xMaxForm.TryGetValue(out xMax);
             ivp = new Ivp(x0, y0);
+            n = (int) nNotRounded;
+            return valid;
+        }
+
+        private static bool NRangeFormsAreValid(
+            TextBoxWithConstraints x0Form,
+            TextBoxWithConstraints y0Form,
+            TextBoxWithConstraints xMaxForm,
+            TextBoxWithConstraints nMinForm,
+            TextBoxWithConstraints nMaxForm,
+            out Ivp ivp,
+            out double xMax,
+            out int nMin,
+            out int nMax)
+        {
+            var valid = x0Form.TryGetValue(out var x0) &
+                        y0Form.TryGetValue(out var y0) &
+                        xMaxForm.TryGetValue(out xMax) &
+                        nMinForm.TryGetValue(out var nMinNotRounded) &
+                        nMaxForm.TryGetValue(out var nMaxNotRounded);
+            ivp = new Ivp(x0, y0);
+            nMin = (int) nMinNotRounded;
+            nMax = (int) nMaxNotRounded;
             return valid;
         }
 
@@ -143,16 +198,6 @@ namespace DEAssignment
                 Top = top,
                 Left = left,
                 Width = width
-            };
-        }
-
-        private static DataGridView CreateTableForErrors(int left)
-        {
-            return new DataGridView()
-            {
-                Left = left,
-                Width = 700,
-                Height = 1000
             };
         }
     }

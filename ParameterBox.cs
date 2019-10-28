@@ -11,7 +11,7 @@ namespace DEAssignment
         [NotNull] public readonly TextBoxWithConstraints TextBox;
 
         public ParameterBox(int left, int top, [NotNull] string label, double initialValue,
-            [NotNull] RangeConstraint constraint)
+            [NotNull] Constraint constraint)
         {
             if (label is null) throw new ArgumentNullException(nameof(label));
             if (constraint is null) throw new ArgumentNullException(nameof(constraint));

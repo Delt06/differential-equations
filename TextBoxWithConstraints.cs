@@ -6,9 +6,9 @@ namespace DEAssignment
 {
     public class TextBoxWithConstraints : TextBox
     {
-        [NotNull] private readonly RangeConstraint _constraint;
+        [NotNull] private readonly Constraint _constraint;
 
-        public TextBoxWithConstraints([NotNull] RangeConstraint constraint)
+        public TextBoxWithConstraints([NotNull] Constraint constraint)
         {
             _constraint = constraint ?? throw new ArgumentNullException(nameof(constraint));
         }
@@ -16,8 +16,7 @@ namespace DEAssignment
 
         public bool TryGetValue(out double value)
         {
-            var valid = double.TryParse(Text, out value) &&
-                        _constraint.MinValue <= value && value <= _constraint.MaxValue;
+            var valid = double.TryParse(Text, out value) && _constraint.IsSatisfied(value);
             
             if (!valid)
             {
