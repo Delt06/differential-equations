@@ -25,16 +25,16 @@ namespace DEAssignment.Charts.Error
             UpdateAxes(localErrors);
         }
 
-        public Control Control => this;
+        public new Control Control => this;
 
-        private void UpdateAxes(IReadOnlyCollection<double> localErrors)
+        private void UpdateAxes(IReadOnlyCollection<double?> localErrors)
         {
             Area.AxisX.Minimum = 0;
             Area.AxisX.Maximum = localErrors.Count - 1;
             Area.AxisX.Interval = 1;
 
-            var min = localErrors.Min();
-            var max = localErrors.Max();
+            var min = localErrors.Where(e => e != null).Min() ?? -1d;
+            var max = localErrors.Where(e => e != null).Max() ?? 1d;
             
             if (min >= max)
             {
@@ -47,13 +47,15 @@ namespace DEAssignment.Charts.Error
             Area.AxisY.LabelStyle = new LabelStyle() {Format = Utils.ErrorFormat};
         }
         
-        private void UpdateSeries(IReadOnlyList<double> localErrors)
+        private void UpdateSeries(IReadOnlyList<double?> localErrors)
         {
             FunctionSeries.Points.Clear();
 
             for (var i = 0; i < localErrors.Count; i++)
             {
-                var point = new DataPoint(i, localErrors[i]);
+                if (localErrors[i] == null) continue;
+                
+                var point = new DataPoint(i, localErrors[i].Value);
                 FunctionSeries.Points.Add(point);
             }
 

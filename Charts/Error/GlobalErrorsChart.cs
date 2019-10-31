@@ -15,7 +15,7 @@ namespace DEAssignment.Charts.Error
         {
         }
 
-        public Control Control => this;
+        public new Control Control => this;
         public int NMin { get; private set; }
         public int NMax { get; private set; }
         public Ivp Ivp { get; private set; }
@@ -31,7 +31,6 @@ namespace DEAssignment.Charts.Error
             var pointCount = NMax - NMin + 1;
             var errors = Enumerable.Range(NMin, pointCount)
                 .Select(GetLastGlobalError)
-                .Select(Math.Abs)
                 .ToArray();
             UpdateAxes(errors);
             UpdateSeries(nMin, errors);
@@ -41,7 +40,7 @@ namespace DEAssignment.Charts.Error
         {
             var step = Utils.GetStep(Ivp.X0, XMax, n);
             var errors = Method.GetGlobalErrors(step, Ivp, XMax);
-            return errors[^1];
+            return errors.Last(e => e != null) ?? 0d;
         }
 
         private void UpdateAxes([NotNull] IReadOnlyCollection<double> errors)
@@ -53,7 +52,7 @@ namespace DEAssignment.Charts.Error
             var min = errors.Min();
             var max = errors.Max();
 
-            if (min >= max)
+            if (min >= max || Math.Abs(max - min) < 1d)
             {
                 min = max - 0.5d;
                 max += 0.5d;

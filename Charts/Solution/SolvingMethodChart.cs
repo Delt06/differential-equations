@@ -1,10 +1,8 @@
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using DEAssignment.Methods;
-using DEAssignment.Methods.Visitors;
 using JetBrains.Annotations;
 
 namespace DEAssignment.Charts.Solution
@@ -29,6 +27,7 @@ namespace DEAssignment.Charts.Solution
             Step = Utils.GetStep(ivp.X0, xMax, n);
             Ivp = ivp;
             XMax = xMax;
+
             YMax = CalculateYMaxValue();
             YMin = CalculateYMinValue();
             
@@ -38,24 +37,27 @@ namespace DEAssignment.Charts.Solution
             Area.RecalculateAxesScale();
         }
 
-        public Control Control => this;
+        public new Control Control => this;
 
         private double CalculateYMaxValue() => Math.Max(Enumerable.Range(0, N)
-            .Max(i => Method[Step, Ivp, i]), Ivp.Y0);
+            .Select(i => Method[Step, Ivp, i])
+            .Where(y => y != null)
+            .Max(y => y.Value), Ivp.Y0);
 
         private double CalculateYMinValue() => Math.Min(Enumerable.Range(0, N)
-            .Min(i => Method[Step, Ivp, i]), Ivp.Y0);
+            .Select(i => Method[Step, Ivp, i])
+            .Where(y => y != null)
+            .Min(y => y.Value), Ivp.Y0);
         
         private void ConfigureArea()
         {
             ConfigureAxis(Area.AxisX, Ivp.X0, XMax);
-            ConfigureAxis(Area.AxisY, YMin, YMax);
+            ConfigureAxis(Area.AxisY, 0d, 0d);
         }
 
-        private static void ConfigureAxis([NotNull] Axis axis, double min, double max)
+        private static void ConfigureAxis([NotNull] Axis axis, double? min, double? max)
         {
-            axis.Minimum = min;
-            axis.Maximum = max;
+            axis.Minimum = min ?? axis.Minimum;
 
             axis.LabelStyle = new LabelStyle {Format = "F2"};
         }
@@ -64,7 +66,9 @@ namespace DEAssignment.Charts.Solution
         {
             FunctionSeries.Points.Clear();
 
-            foreach (var point in Enumerable.Range(0, N).Select(GetDataPoint))
+            foreach (var point in Enumerable.Range(0, N)
+                .Select(i => TryGetDataPoint(i, out var point) ? point : null)
+                .Where(p => p != null))
             {
                 FunctionSeries.Points.Add(point);
             }
@@ -72,12 +76,19 @@ namespace DEAssignment.Charts.Solution
             FunctionSeries.Color = Color;
         }
 
-        [NotNull]
-        private DataPoint GetDataPoint(int i)
+        private bool TryGetDataPoint(int i, out DataPoint point)
         {
             var x = Ivp.X0 + Step * i;
             var y = Method[Step, Ivp, i];
-            return new DataPoint(x, y);
+            
+            if (y == null)
+            {
+                point = default;
+                return false;
+            }
+
+            point = new DataPoint(x, y.Value);
+            return true;
         }
     }
 }

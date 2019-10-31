@@ -1,3 +1,4 @@
+using System;
 using DEAssignment.Methods.Visitors;
 
 namespace DEAssignment.Methods
@@ -16,11 +17,13 @@ namespace DEAssignment.Methods
 
         protected override double GetValue(double step, Ivp ivp, int i)
         {
-            var (x, y) = ivp;   
+            var (x, y) = ivp;
 
             for (var j = 1; j <= i; j++)
             {
-                y += step * RightSideFunction(x, y);
+                var yPrime = RightSideFunction(x, y);
+                //Console.WriteLine($"y'({x},{y})={yPrime}");
+                y += step * yPrime;
                 x += step;
             }
 

@@ -5,7 +5,7 @@ namespace DEAssignment.Methods
 {
     public interface ISolvingMethod
     {
-        double this[double step, Ivp ivp, int i] { get; }
+        double? this[double step, Ivp ivp, int i] { get; }
 
         void Accept([NotNull] IMethodVisitor visitor);
     }

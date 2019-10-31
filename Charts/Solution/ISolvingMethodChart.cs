@@ -1,7 +1,4 @@
-using System.Windows.Forms;
-using DEAssignment.Methods;
 using DEAssignment.Methods.Visitors;
-using JetBrains.Annotations;
 
 namespace DEAssignment.Charts.Solution
 {

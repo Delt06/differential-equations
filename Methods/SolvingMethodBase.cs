@@ -6,14 +6,16 @@ namespace DEAssignment.Methods
 {
     public abstract class SolvingMethodBase : ISolvingMethod
     {
-        public double this[double step, Ivp ivp, int i]
+        public double? this[double step, Ivp ivp, int i]
         {
             get
             {
                 if (step <= 0d) throw new ArgumentOutOfRangeException(nameof(step));
                 if (i < 0) throw new ArgumentOutOfRangeException(nameof(i));
 
-                return GetValue(step, ivp, i);
+                var value = GetValue(step, ivp, i);
+
+                return Utils.CanBeRepresentedOnChart(value) ? value : (double?) null;
             }
         }
 
