@@ -51,7 +51,7 @@ namespace DEAssignment
             var localErrorsChartTop = chartCollection.SolutionCharts.Max(c => c.Control.Bottom);
             ConfigureCharts(chartCollection.LocalErrorsCharts, left, localErrorsChartTop);
             var globalErrorsChartTop = chartCollection.LocalErrorsCharts.Max(c => c.Control.Bottom);
-            ConfigureCharts(chartCollection.GlobalErrorsCharts, left,globalErrorsChartTop);
+            ConfigureCharts(chartCollection.GlobalErrorsCharts, left, globalErrorsChartTop);
         }
 
         private static void ConfigureCharts([NotNull] IReadOnlyList<IFunctionChart> charts, int left, int top)

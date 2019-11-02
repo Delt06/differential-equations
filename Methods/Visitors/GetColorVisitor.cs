@@ -20,6 +20,6 @@ namespace DEAssignment.Methods.Visitors
             Result = Mapping.ImprovedEulerMethodColor;
 
         public void Visit(ClassicRungeKuttaMethod classicRungeKuttaMethod) => 
-            Result = Mapping.ClassicRungeKuttaColor;
+            Result = Mapping.ClassicRungeKuttaMethodColor;
     }
 }

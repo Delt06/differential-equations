@@ -1,11 +1,8 @@
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using DEAssignment.Methods;
 using DEAssignment.Methods.Errors;
-using DEAssignment.Methods.Visitors;
 using JetBrains.Annotations;
 
 namespace DEAssignment.Charts.Error
@@ -25,25 +22,11 @@ namespace DEAssignment.Charts.Error
             UpdateAxes(localErrors);
         }
 
-        public new Control Control => this;
-
         private void UpdateAxes(IReadOnlyCollection<double?> localErrors)
         {
             Area.AxisX.Minimum = 0;
             Area.AxisX.Maximum = localErrors.Count - 1;
             Area.AxisX.Interval = 1;
-
-            var min = localErrors.Where(e => e != null).Min() ?? -1d;
-            var max = localErrors.Where(e => e != null).Max() ?? 1d;
-            
-            if (min >= max)
-            {
-                min = max - 0.5d;
-                max += 0.5d;
-            }
-            
-            Area.AxisY.Minimum = min;
-            Area.AxisY.Maximum = max;
             Area.AxisY.LabelStyle = new LabelStyle() {Format = Utils.ErrorFormat};
         }
         

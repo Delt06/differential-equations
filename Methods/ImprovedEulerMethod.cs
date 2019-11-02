@@ -21,8 +21,10 @@ namespace DEAssignment.Methods
 
             for (var j = 1; j <= i; j++)
             {
-                var yWithCap = y + step * RightSideFunction(x, y);
-                y += step * (RightSideFunction(x, y) + RightSideFunction(x + step, yWithCap)) / 2d;
+                var slopeLeft = RightSideFunction(x, y);
+                var slopeRight = RightSideFunction(x + step, y + step * slopeLeft);
+                var slopeIdeal = 0.5d * (slopeLeft + slopeRight);
+                y += step * slopeIdeal;
                 x += step;
             }
 

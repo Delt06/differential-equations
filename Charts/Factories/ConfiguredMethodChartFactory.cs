@@ -16,7 +16,7 @@ namespace DEAssignment.Charts.Factories
         private readonly ColorMapping _colorMapping = new ColorMapping
         {
             FallbackColor = Color.Black,
-            ClassicRungeKuttaColor = Color.Purple,
+            ClassicRungeKuttaMethodColor = Color.Purple,
             EulerMethodColor = Color.Red,
             ExactMethodColor = Color.Blue,
             ImprovedEulerMethodColor = Color.Orange
@@ -72,6 +72,6 @@ namespace DEAssignment.Charts.Factories
         {
             solvingMethod.Accept(_nameVisitor);
             return _nameVisitor.Result;
-        }
+        } 
     }
 }

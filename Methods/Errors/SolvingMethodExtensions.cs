@@ -21,7 +21,6 @@ namespace DEAssignment.Methods.Errors
                 if (y == null) continue;
                 
                 var yExact = Utils.Solution(x);
-
                 var error = y.Value - yExact;
 
                 globalErrors[i] = Utils.CanBeRepresentedOnChart(error) ? error : (double?) null;
@@ -44,17 +43,26 @@ namespace DEAssignment.Methods.Errors
 
             for (var i = 1; i < pointsCount; i++)
             {
-                if (globalErrors[i] == null) continue;
-                var currentGlobalError = globalErrors[i].GetValueOrDefault();
-                if (globalErrors[i - 1] == null) continue;
-                var previousGlobalError = globalErrors[i - 1].GetValueOrDefault();
+                if (!TryGetLastPairOfErrors(globalErrors, i, out var pairOfErrors)) continue;
 
-                var error = currentGlobalError - previousGlobalError;
+                var error = pairOfErrors.current - pairOfErrors.last;
                 
                 localErrors[i] = Utils.CanBeRepresentedOnChart(error) ? error : (double?) null;
             }
 
             return localErrors;
+        }
+
+        private static bool TryGetLastPairOfErrors([NotNull] double?[] errors, int i, out (double last, double current) pairOfErrors)
+        {
+            pairOfErrors = default;
+            
+            if (errors[i] == null) return false;
+            pairOfErrors.current = errors[i].GetValueOrDefault();
+            if (errors[i - 1] == null) return false;
+            pairOfErrors.last = errors[i - 1].GetValueOrDefault();
+
+            return true;
         }
     }
 }

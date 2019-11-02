@@ -1,4 +1,3 @@
-using System;
 using DEAssignment.Methods.Visitors;
 
 namespace DEAssignment.Methods
@@ -22,7 +21,6 @@ namespace DEAssignment.Methods
             for (var j = 1; j <= i; j++)
             {
                 var yPrime = RightSideFunction(x, y);
-                //Console.WriteLine($"y'({x},{y})={yPrime}");
                 y += step * yPrime;
                 x += step;
             }

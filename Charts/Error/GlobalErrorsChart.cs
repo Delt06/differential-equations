@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using DEAssignment.Methods;
 using DEAssignment.Methods.Errors;
@@ -15,7 +13,6 @@ namespace DEAssignment.Charts.Error
         {
         }
 
-        public new Control Control => this;
         public int NMin { get; private set; }
         public int NMax { get; private set; }
         public Ivp Ivp { get; private set; }
@@ -48,18 +45,7 @@ namespace DEAssignment.Charts.Error
             Area.AxisX.Minimum = NMin;
             Area.AxisX.Maximum = NMax;
             Area.AxisX.Interval = 1;
-
-            var min = errors.Min();
-            var max = errors.Max();
-
-            if (min >= max || Math.Abs(max - min) < 1d)
-            {
-                min = max - 0.5d;
-                max += 0.5d;
-            }
-
-            Area.AxisY.Minimum = min;
-            Area.AxisY.Maximum = max;
+            
             Area.AxisY.LabelStyle = new LabelStyle() {Format = Utils.ErrorFormat};
         }
 

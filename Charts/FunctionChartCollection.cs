@@ -26,8 +26,10 @@ namespace DEAssignment.Charts
             var solutionCharts = methods
                 .Select(factory.CreateSolutionChartFor);
             var localErrorsCharts = methods
+                .Where(m => m is ApproximatedMethod)
                 .Select(factory.CreateLocalErrorsChartFor);
             var globalErrorsCharts = methods
+                .Where(m => m is ApproximatedMethod)
                 .Select(factory.CreateGlobalErrorsChartFor);
             
             return new FunctionChartCollection(solutionCharts, localErrorsCharts, globalErrorsCharts);

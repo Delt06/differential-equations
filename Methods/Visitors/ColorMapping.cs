@@ -8,6 +8,6 @@ namespace DEAssignment.Methods.Visitors
         public Color EulerMethodColor { get; set; }
         public Color ExactMethodColor { get; set; }
         public Color ImprovedEulerMethodColor { get; set; }
-        public Color ClassicRungeKuttaColor { get; set; }
+        public Color ClassicRungeKuttaMethodColor { get; set; }
     }
 }
