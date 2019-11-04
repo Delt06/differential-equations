@@ -5,6 +5,8 @@ namespace DEAssignment
 {
     public static class Utils
     {
+        public const int HighN = 100;
+        
         public const string ErrorFormat = "e2";
         public const int N = 10;
         public const int NMax = 20;

@@ -11,6 +11,9 @@ namespace DEAssignment.Charts.Factories
         ISolvingMethodChart CreateSolutionChartFor([NotNull] ISolvingMethod solvingMethod);
 
         [NotNull]
+        ISolvingMethodChart CreateHighPrecisionChartFor([NotNull] ISolvingMethod solvingMethod);
+
+        [NotNull]
         ILocalErrorsChart CreateLocalErrorsChartFor([NotNull] ISolvingMethod solvingMethod);
 
         [NotNull]

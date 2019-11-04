@@ -24,7 +24,9 @@ namespace DEAssignment.Charts
             if (factory is null) throw new ArgumentNullException(nameof(factory));
 
             var solutionCharts = methods
-                .Select(factory.CreateSolutionChartFor);
+                .Select(m => m is ExactMethod ? 
+                    factory.CreateHighPrecisionChartFor(m) : 
+                    factory.CreateSolutionChartFor(m));
             var localErrorsCharts = methods
                 .Where(m => m is ApproximatedMethod)
                 .Select(factory.CreateLocalErrorsChartFor);

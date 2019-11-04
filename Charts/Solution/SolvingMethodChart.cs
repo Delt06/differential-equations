@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
 using DEAssignment.Methods;
@@ -11,6 +12,9 @@ namespace DEAssignment.Charts.Solution
         public Ivp Ivp { get; private set; }
         public double XMax { get; private set; }
         public int N { get; private set; }
+
+        protected virtual int MinN => 2;
+        protected virtual int MaxN => int.MaxValue;
 
         public SolvingMethodChart([NotNull] ISolvingMethod method) : base(method)
         {
@@ -34,14 +38,25 @@ namespace DEAssignment.Charts.Solution
         public void SetUp(int n, Ivp ivp, double xMax)
         {
             N = n;
-            Step = Utils.GetStep(ivp.X0, xMax, n);
+            ClampN();
             Ivp = ivp;
             XMax = xMax;
-            
+            RecalculateStep();
+
             ConfigureArea();
             ConfigureSeries();
             
             Area.RecalculateAxesScale();
+        }
+
+        private void RecalculateStep()
+        {
+            Step = Utils.GetStep(Ivp.X0, XMax, N);
+        }
+
+        private void ClampN()
+        {
+            N = Math.Clamp(N, MinN, MaxN);
         }
 
         private void ConfigureSeries()

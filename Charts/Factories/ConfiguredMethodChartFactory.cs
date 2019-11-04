@@ -26,45 +26,26 @@ namespace DEAssignment.Charts.Factories
         {
             if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
 
-            var chart = new SolvingMethodChart(solvingMethod)
-            {
-                ColorMapping = _colorMapping
-            };
-
-            var title = new Title(GetNameOf(solvingMethod));
-            chart.Titles.Add(title);
-
+            var chart = new SolvingMethodChart(solvingMethod);
+            Configure(chart);
             return chart;
         }
 
-        public ILocalErrorsChart CreateLocalErrorsChartFor(ISolvingMethod solvingMethod)
+        private void Configure([NotNull] FunctionChartBase chart, [NotNull] string suffix = "")
         {
-            if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
+            if (chart is null) throw new ArgumentNullException(nameof(chart));
 
-            var chart = new LocalErrorsChart(solvingMethod)
-            {
-                ColorMapping = _colorMapping
-            };
+            chart.ColorMapping = _colorMapping;
 
-            var title = new Title(GetNameOf(solvingMethod) + ". Local errors");
-            chart.Titles.Add(title);
-
-            return chart;
-        }
-
-        public IGlobalErrorsChart CreateGlobalErrorsChartFor(ISolvingMethod solvingMethod)
-        {
-            if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
+            var name = GetNameOf(chart.Method);
             
-            var chart = new GlobalErrorsChart(solvingMethod)
+            if (!string.IsNullOrEmpty(suffix))
             {
-                ColorMapping = _colorMapping
-            };
-
-            var title = new Title(GetNameOf(solvingMethod) + ". Global errors");
+                name += suffix;
+            }
+            
+            var title = new Title(name);
             chart.Titles.Add(title);
-
-            return chart;
         }
 
         [NotNull]
@@ -72,6 +53,33 @@ namespace DEAssignment.Charts.Factories
         {
             solvingMethod.Accept(_nameVisitor);
             return _nameVisitor.Result;
-        } 
+        }
+        
+        public ISolvingMethodChart CreateHighPrecisionChartFor(ISolvingMethod solvingMethod)
+        {
+            if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
+
+            var chart = new HighPrecisionSolvingMethodChart(solvingMethod);
+            Configure(chart);
+            return chart;
+        }
+
+        public ILocalErrorsChart CreateLocalErrorsChartFor(ISolvingMethod solvingMethod)
+        {
+            if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
+
+            var chart = new LocalErrorsChart(solvingMethod);
+            Configure(chart, ". Local errors");
+            return chart;
+        }
+
+        public IGlobalErrorsChart CreateGlobalErrorsChartFor(ISolvingMethod solvingMethod)
+        {
+            if (solvingMethod is null) throw new ArgumentNullException(nameof(solvingMethod));
+
+            var chart = new GlobalErrorsChart(solvingMethod);
+            Configure(chart, ". Global errors");
+            return chart;
+        }
     }
 }
