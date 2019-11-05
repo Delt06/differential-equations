@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using DEAssignment.Methods;
 using DEAssignment.Methods.Errors;
@@ -9,9 +8,13 @@ namespace DEAssignment.Charts.Error
 {
     public class LocalErrorsChart : FunctionChartBase, ILocalErrorsChart
     {
+        protected sealed override bool RoundXIntervalToInt => true;
+        
         public LocalErrorsChart([NotNull] ISolvingMethod method) : base(method)
         {
-            
+            Area.AxisX.Title = "i";
+            Area.AxisY.Title = "error";
+            Area.AxisY.LabelStyle = new LabelStyle {Format = Utils.ErrorFormat};
         }
 
         public void Update(double step, Ivp ivp, double xMax)
@@ -20,14 +23,15 @@ namespace DEAssignment.Charts.Error
 
             UpdateSeries(localErrors);
             UpdateAxes(localErrors);
+            UpdateGridIntervals();
         }
 
         private void UpdateAxes(IReadOnlyCollection<double?> localErrors)
         {
-            Area.AxisX.Minimum = 0;
-            Area.AxisX.Maximum = localErrors.Count - 1;
+            XAxisRange = (0, localErrors.Count - 1);
             Area.AxisX.Interval = 1;
-            Area.AxisY.LabelStyle = new LabelStyle() {Format = Utils.ErrorFormat};
+            
+            UpdateYAxisRange();
         }
         
         private void UpdateSeries(IReadOnlyList<double?> localErrors)

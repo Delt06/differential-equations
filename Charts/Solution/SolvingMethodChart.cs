@@ -16,23 +16,24 @@ namespace DEAssignment.Charts.Solution
         protected virtual int MinN => 2;
         protected virtual int MaxN => int.MaxValue;
 
+        private const string AxisFormat = "F2";
+
         public SolvingMethodChart([NotNull] ISolvingMethod method) : base(method)
         {
-            
+            ConfigureAxis(Area.AxisX, "x");
+            ConfigureAxis(Area.AxisY, "y");
+        }
+        
+        private static void ConfigureAxis([NotNull] Axis axis, [NotNull] string title)
+        {
+            axis.Title = title;
+            axis.LabelStyle = new LabelStyle {Format = AxisFormat};
         }
         
         private void ConfigureArea()
         {
-            ConfigureAxis(Area.AxisX, Ivp.X0, XMax);
-            ConfigureAxis(Area.AxisY, null, null);
-        }
-        
-        private static void ConfigureAxis([NotNull] Axis axis, double? min, double? max)
-        {
-            axis.Minimum = min ?? axis.Minimum;
-            axis.Maximum = max ?? axis.Maximum;
-            
-            axis.LabelStyle = new LabelStyle {Format = "F2"};
+            XAxisRange = (Ivp.X0, XMax);
+            UpdateYAxisRange();
         }
 
         public void SetUp(int n, Ivp ivp, double xMax)
@@ -43,9 +44,10 @@ namespace DEAssignment.Charts.Solution
             XMax = xMax;
             RecalculateStep();
 
-            ConfigureArea();
             ConfigureSeries();
-            
+            ConfigureArea();
+            UpdateGridIntervals();
+
             Area.RecalculateAxesScale();
         }
 

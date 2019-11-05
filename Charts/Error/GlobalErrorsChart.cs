@@ -11,13 +11,16 @@ namespace DEAssignment.Charts.Error
     {
         public GlobalErrorsChart([NotNull] ISolvingMethod method) : base(method)
         {
+            Area.AxisX.Title = "n";
+            Area.AxisY.Title = "error";
         }
 
         public int NMin { get; private set; }
         public int NMax { get; private set; }
         public Ivp Ivp { get; private set; }
         public double XMax { get; private set; }
-        
+        protected sealed override bool RoundXIntervalToInt => true;
+
         public void Update(int nMin, int nMax, Ivp ivp, double xMax)
         {
             NMin = nMin;
@@ -29,8 +32,9 @@ namespace DEAssignment.Charts.Error
             var errors = Enumerable.Range(NMin, pointCount)
                 .Select(GetLastGlobalError)
                 .ToArray();
-            UpdateAxes(errors);
             UpdateSeries(nMin, errors);
+            UpdateAxes();
+            UpdateGridIntervals();
         }
 
         private double GetLastGlobalError(int n)
@@ -40,13 +44,15 @@ namespace DEAssignment.Charts.Error
             return errors.Last(e => e != null) ?? 0d;
         }
 
-        private void UpdateAxes([NotNull] IReadOnlyCollection<double> errors)
+        private void UpdateAxes()
         {
-            Area.AxisX.Minimum = NMin;
-            Area.AxisX.Maximum = NMax;
+            XAxisRange = (NMin, NMax);
             Area.AxisX.Interval = 1;
+            Area.AxisX.Title = "n";
             
             Area.AxisY.LabelStyle = new LabelStyle() {Format = Utils.ErrorFormat};
+            Area.AxisY.Title = "error";
+            UpdateYAxisRange();
         }
 
         private void UpdateSeries(int nMin, [NotNull] IReadOnlyList<double> errors)
