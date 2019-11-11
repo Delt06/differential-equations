@@ -21,7 +21,7 @@ namespace DEAssignment.Methods
         protected override double GetValue(double step, Ivp ivp, int i)
         {
             var x = ivp.X0 + step * i;
-            return _solution(x);
+            return _solution(x, ivp);
         }
     }
 }

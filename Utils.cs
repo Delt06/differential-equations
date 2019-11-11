@@ -13,7 +13,14 @@ namespace DEAssignment
         public static readonly Ivp Ivp = new Ivp(0d, Math.Sqrt(1d / 2d));
         public const double XMax = 3d;
 
-        public static double Solution(double x) => Math.Exp(x * x / 2d) / Math.Sqrt(Math.Exp(x * x) + 1d);
+        public static double Solution(double x, Ivp ivp)
+        {
+            var (x0, y0) = ivp;
+            var eX2 = Math.Exp(x0 * x0);
+            var c = eX2 / (y0 * y0) - eX2;
+            var sign = Math.Sign(y0);
+            return sign * Math.Exp(x * x / 2d) / Math.Sqrt(Math.Exp(x * x) + c);
+        }
 
         public static double RightSideFunction(double x, double y) => x * y * (1 - y * y);
 

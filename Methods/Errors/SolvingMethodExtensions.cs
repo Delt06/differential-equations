@@ -20,7 +20,7 @@ namespace DEAssignment.Methods.Errors
                 var y = solvingMethod[step, ivp, i];
                 if (y == null) continue;
                 
-                var yExact = Utils.Solution(x);
+                var yExact = Utils.Solution(x, ivp);
                 var error = y.Value - yExact;
 
                 globalErrors[i] = Utils.CanBeRepresentedOnChart(error) ? error : (double?) null;
